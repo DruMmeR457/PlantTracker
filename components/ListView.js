@@ -39,9 +39,4 @@ const SectionListBasics = () => {
     );
 }
 
-function getAll(db)
-{
-  db.transaction("Test.db");
-}
-
 export default SectionListBasics;
