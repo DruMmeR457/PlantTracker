@@ -56,7 +56,7 @@ const GetAll = () => {
                {key: 'Jimmy'},
                {key: 'Julie'},
              ]}
-             renderItem={({plant}) => <Text style={styles.plant}>{plant.key}</Text>}
+             renderItem={({item}) => <Text style={styles.plant}>{item.key}</Text>}
            />
          </View>
        );
