@@ -10,7 +10,7 @@ export default function App() {
   return (
     <View>
     <Text><Cat /></Text>
-
+    <Text><GetAll /></Text>
     <Text><List /></Text>
     </View>
   );
