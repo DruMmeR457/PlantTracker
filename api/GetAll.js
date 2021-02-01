@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import SQLite2 from 'react-native-sqlite-storage';
@@ -27,7 +27,13 @@ const styles = StyleSheet.create({
   },
 })
 
-const GetAll = () => {
+export default class GetAll extends React.Components {
+  constructor(props) {
+    super(props)
+    this.state = {
+      data: null
+    }
+
   db.transaction(tx => {
        // sending 4 arguments in executeSql
        tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
@@ -37,28 +43,20 @@ const GetAll = () => {
          (txObj, error) => console.log('Error ', error)
          ) // end executeSQL
      })
-   }
 
-     const Results = () => {
-       GetAll();
        return (
-         <View style={styles.container}>
-           <FlatList
-             data={[
-               {key: _array[0]},
-               {key: _array[1]},
-               {key: 'Dominic'},
-               {key: 'Jackson'},
-               {key: 'James'},
-               {key: 'Joel'},
-               {key: 'John'},
-               {key: 'Jillian'},
-               {key: 'Jimmy'},
-               {key: 'Julie'},
-             ]}
-             renderItem={({item}) => <Text style={styles.plant}>{item.key}</Text>}
-           />
-         </View>
+         <View>
+         <ScrollView style={Style.widthfull}>
+              {
+                  this.state.data && this.state.data.map(data =>
+                  (
+                      <View key={data.Id} style={Style.list}>
+                      <Text >{data.Name} - {data.LastWatered}</Text>
+                      </View>
+                  )
+              )}
+              </ScrollView>
+              </View>
        );
      }
-     export default Results;
+   }
