@@ -60,12 +60,24 @@ class App extends Component {
         <View>
           <Button
             onPress={() => {
+              if(this.state.data == null)
+              {
+                db.transaction(tx => {
+                  tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['hello', '1/11', '5/30', '5/25'],
+                    (txObj, resultSet) => this.setState({ data: [].concat(
+                        { Name: 'hello', LastWatered: '1/11', LastFertilized: '5/30', LastPotted: '5/25' }) }),
+                    (txObj, error) => console.log('Error', error))
+                })
+              }
+              else
+              {
                 db.transaction(tx => {
                   tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['hello', '1/11', '5/30', '5/25'],
                     (txObj, resultSet) => this.setState({ data: this.state.data.concat(
                         { Name: 'hello', LastWatered: '1/11', LastFertilized: '5/30', LastPotted: '5/25' }) }),
                     (txObj, error) => console.log('Error', error))
                 })
+              }
             }}
             title={'INSERT'}
           />
