@@ -31,6 +31,104 @@ export default class App extends Component {
     this.state = {
       data: null,
     }
+
+    const HomeScreen = ({ navigation }) => {
+      db.transaction(tx => {
+           // sending 4 arguments in executeSql
+           tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
+             // success callback which sends two things Transaction object and ResultSet Object
+             (txObj, { rows: { _array } }) => this.setState({ data: _array }),
+             // failure callback which sends two things Transaction object and Error
+             (txObj, error) => console.log('Error ', error)
+             ) // end executeSQL
+         });
+         return(
+         <View>
+         <Text style={styles.plant}>{'Name'.padEnd(12)}{'Water'.padEnd(12)}{'Fertilize'.padEnd(12)}{'Pot'.padEnd(12)}</Text>
+         <ScrollView>
+         {
+             this.state.data && this.state.data.map(data =>
+             (
+                 <View key={data.Id} style={styles.container}>
+                 <Text style={styles.plant}>{data.Id}  {data.Name.trim().padEnd(12)}{data.LastWatered.trim().padEnd(12)}{data.LastFertilized.trim().padEnd(12)}{data.LastPotted.trim().padEnd(12)}</Text>
+                 </View>
+             )
+         )}
+         </ScrollView>
+         <Button title="Add Plant" onPress={() => navigation.navigate('HomeScreen')} />
+       </View >
+      );
+    }
+
+    const AddScreen = ({ navigation }) => {
+      const [nameText, setNameText] = useState('');
+      const [waterText, setWaterText] = useState('');
+      const [fertText, setFertText] = useState('');
+      const [potText, setPotText] = useState('');
+      const [isAdd, setIsAdd] = useState(false);
+      db.transaction(tx => {
+           // sending 4 arguments in executeSql
+           tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
+             // success callback which sends two things Transaction object and ResultSet Object
+             (txObj, { rows: { _array } }) => this.setState({ data: _array }),
+             // failure callback which sends two things Transaction object and Error
+             (txObj, error) => console.log('Error ', error)
+             ) // end executeSQL
+         });
+         return(
+           <View style={{padding: 10}}>
+             <TextInput
+               style={{height: 40}}
+               placeholder="Name"
+               onChangeText={nameText => setNameText(nameText)}
+               defaultValue={nameText}
+             />
+             <TextInput
+               style={{height: 40}}
+               placeholder="Last Watered"
+               onChangeText={waterText => setWaterText(waterText)}
+               defaultValue={waterText}
+             />
+             <TextInput
+               style={{height: 40}}
+               placeholder="Last Fertilized"
+               onChangeText={fertText => setFertText(fertText)}
+               defaultValue={fertText}
+             />
+             <TextInput
+               style={{height: 40}}
+               placeholder="Last Potted"
+               onChangeText={potText => setPotText(potText)}
+               defaultValue={potText}
+             />
+             <Button title="Add" disabled={isAdd} onPress={() => {
+               Insert(nameText, waterText, fertText, potText);
+               setIsAdd(true);
+               title='Plant Added!';
+             }} />
+             <Button title="Go back" onPress={() => navigation.goBack()} />
+           </View>
+      );
+    }
+
+    const Insert = (nameText, waterText, fertText, potText) => {
+      db.transaction(tx => {
+           tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', [nameText, waterText, fertText, potText],
+             (txObj, resultSet) => this.setState({ data: this.state.data.concat(
+                 { Id: resultSet.insertId, Name: nameText, LastWatered: waterText, LastFertilized: fertText, LastPotted: potText }) }),
+             (txObj, error) => console.log('Error', error))
+         });
+    }
+
+    const MyStack = () => {
+      return(
+      <Stack.Navigator>
+        <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="AddScreen" component={AddScreen} />
+      </Stack.Navigator>
+      );
+    }
+
   return (
     <View>
     <Text>Hello, World!</Text>
@@ -44,93 +142,84 @@ export default class App extends Component {
   }
 }
 
-function MyStack()
-{
-  return(
-  <Stack.Navigator>
-    <Stack.Screen name="HomeScreen" component={HomeScreen} />
-  </Stack.Navigator>
-  );
-}
-
-function HomeScreen({ navigation }) {
-  db.transaction(tx => {
-       // sending 4 arguments in executeSql
-       tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
-         // success callback which sends two things Transaction object and ResultSet Object
-         (txObj, { rows: { _array } }) => this.setState({ data: _array }),
-         // failure callback which sends two things Transaction object and Error
-         (txObj, error) => console.log('Error ', error)
-         ) // end executeSQL
-     });
-     return(
-     <View>
-     <Text style={styles.plant}>{'Name'.padEnd(12)}{'Water'.padEnd(12)}{'Fertilize'.padEnd(12)}{'Pot'.padEnd(12)}</Text>
-     <ScrollView>
-     {
-         this.state.data && this.state.data.map(data =>
-         (
-             <View key={data.Id} style={styles.container}>
-             <Text style={styles.plant}>{data.Id}  {data.Name.trim().padEnd(12)}{data.LastWatered.trim().padEnd(12)}{data.LastFertilized.trim().padEnd(12)}{data.LastPotted.trim().padEnd(12)}</Text>
-             </View>
-         )
-     )}
-     </ScrollView>
-     <Button title="Add Plant" onPress={() => navigation.navigate('HomeScreen')} />
-   </View >
-  );
-}
-
-function AddScreen({ navigation }) {
-  const [nameText, setNameText] = useState('');
-  const [waterText, setWaterText] = useState('');
-  const [fertText, setFertText] = useState('');
-  const [potText, setPotText] = useState('');
-  const [isAdd, setIsAdd] = useState(false);
-     return(
-       <View style={{padding: 10}}>
-         <TextInput
-           style={{height: 40}}
-           placeholder="Name"
-           onChangeText={nameText => setNameText(nameText)}
-           defaultValue={nameText}
-         />
-         <TextInput
-           style={{height: 40}}
-           placeholder="Last Watered"
-           onChangeText={waterText => setWaterText(nameText)}
-           defaultValue={waterText}
-         />
-         <TextInput
-           style={{height: 40}}
-           placeholder="Last Fertilized"
-           onChangeText={fertText => setFertText(nameText)}
-           defaultValue={fertText}
-         />
-         <TextInput
-           style={{height: 40}}
-           placeholder="Last Potted"
-           onChangeText={potText => setPotText(nameText)}
-           defaultValue={potText}
-         />
-         <Button title="Add" disabled={isAdd} onPress={() => {
-           Insert(nameText, waterText, fertText, potText);
-           setIsAdd(true);
-         }} />
-         <Button title="Go back" onPress={() => navigation.goBack()} />
-       </View>
-  );
-}
-
-function Insert(nameText, waterText, fertText, potText)
-{
-  db.transaction(tx => {
-       tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', [nameText, waterText, fertText, potText],
-         (txObj, resultSet) => this.setState({ data: this.state.data.concat(
-             { Id: resultSet.insertId, Name: nameText, LastWatered: waterText, LastFertilized: fertText, LastPotted: potText }) }),
-         (txObj, error) => console.log('Error', error))
-     });
-}
+// function HomeScreen({ navigation }) {
+//   db.transaction(tx => {
+//        // sending 4 arguments in executeSql
+//        tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
+//          // success callback which sends two things Transaction object and ResultSet Object
+//          (txObj, { rows: { _array } }) => this.setState({ data: _array }),
+//          // failure callback which sends two things Transaction object and Error
+//          (txObj, error) => console.log('Error ', error)
+//          ) // end executeSQL
+//      });
+//      return(
+//      <View>
+//      <Text style={styles.plant}>{'Name'.padEnd(12)}{'Water'.padEnd(12)}{'Fertilize'.padEnd(12)}{'Pot'.padEnd(12)}</Text>
+//      <ScrollView>
+//      {
+//          this.state.data && this.state.data.map(data =>
+//          (
+//              <View key={data.Id} style={styles.container}>
+//              <Text style={styles.plant}>{data.Id}  {data.Name.trim().padEnd(12)}{data.LastWatered.trim().padEnd(12)}{data.LastFertilized.trim().padEnd(12)}{data.LastPotted.trim().padEnd(12)}</Text>
+//              </View>
+//          )
+//      )}
+//      </ScrollView>
+//      <Button title="Add Plant" onPress={() => navigation.navigate('HomeScreen')} />
+//    </View >
+//   );
+// }
+//
+// function AddScreen({ navigation }) {
+//   const [nameText, setNameText] = useState('');
+//   const [waterText, setWaterText] = useState('');
+//   const [fertText, setFertText] = useState('');
+//   const [potText, setPotText] = useState('');
+//   const [isAdd, setIsAdd] = useState(false);
+//      return(
+//        <View style={{padding: 10}}>
+//          <TextInput
+//            style={{height: 40}}
+//            placeholder="Name"
+//            onChangeText={nameText => setNameText(nameText)}
+//            defaultValue={nameText}
+//          />
+//          <TextInput
+//            style={{height: 40}}
+//            placeholder="Last Watered"
+//            onChangeText={waterText => setWaterText(nameText)}
+//            defaultValue={waterText}
+//          />
+//          <TextInput
+//            style={{height: 40}}
+//            placeholder="Last Fertilized"
+//            onChangeText={fertText => setFertText(nameText)}
+//            defaultValue={fertText}
+//          />
+//          <TextInput
+//            style={{height: 40}}
+//            placeholder="Last Potted"
+//            onChangeText={potText => setPotText(nameText)}
+//            defaultValue={potText}
+//          />
+//          <Button title="Add" disabled={isAdd} onPress={() => {
+//            Insert(nameText, waterText, fertText, potText,setData);
+//            setIsAdd(true);
+//          }} />
+//          <Button title="Go back" onPress={() => navigation.goBack()} />
+//        </View>
+//   );
+// }
+//
+// function Insert(nameText, waterText, fertText, potText)
+// {
+//   db.transaction(tx => {
+//        tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', [nameText, waterText, fertText, potText],
+//          (txObj, resultSet) => this.setState({ data: this.state.data.concat(
+//              { Id: resultSet.insertId, Name: nameText, LastWatered: waterText, LastFertilized: fertText, LastPotted: potText }) }),
+//          (txObj, error) => console.log('Error', error))
+//      });
+// }
 
 const styles = StyleSheet.create({
   container: {
