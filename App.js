@@ -1,12 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { Component } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
 
 // import Cat from './components/Cat.js';
 // import List from './components/ListView.js';
 // import GetAll from './api/GetAll.js';
 
 import * as SQLite from 'expo-sqlite';
+const db = SQLite.openDatabase('PlantDatabase.db');
+
 
 // export default function App() {
 //   return (
@@ -22,16 +25,18 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      data: null
+      data: null,
+      HeadTable: ['Head1', 'Head2', 'Head3', 'Head4', 'Head5'],
+     DataTable: [
+       ['Id', 'Name', 'Water', 'Fertilize', 'Pot'],
+     ]
     }
 
-    const db = SQLite.openDatabase('PlantDatabase.db');
-
-    // db.transaction(tx => {
-    //      // sending 4 arguments in executeSql
-    //      tx.executeSql('CREATE TABLE IF NOT EXISTS Plant(Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, LastWatered DATETIME, LastFertilized DATETIME, LastPotted DATETIME);')
-    //    }
-    //  );
+    db.transaction(tx => {
+         // sending 4 arguments in executeSql
+         tx.executeSql('CREATE TABLE IF NOT EXISTS Plant(Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, LastWatered DATETIME, LastFertilized DATETIME, LastPotted DATETIME);')
+       }
+     );
 
    // db.transaction(tx => {
    //   tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['gibberish', '6/14', '5/30', '4/15'],
@@ -40,15 +45,6 @@ class App extends Component {
    //     (txObj, error) => console.log('Error', error))
    // })
 
-    db.transaction(tx => {
-         // sending 4 arguments in executeSql
-         tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
-           // success callback which sends two things Transaction object and ResultSet Object
-           (txObj, { rows: { _array } }) => this.setState({ data: _array }),
-           // failure callback which sends two things Transaction object and Error
-           (txObj, error) => console.log('Error ', error)
-           ) // end executeSQL
-       })
   }
   render() {
     return (
@@ -56,12 +52,53 @@ class App extends Component {
         <Text>Hello, World!</Text>
         <Text>Hello, World!</Text>
         <Text>Hello, World!</Text>
+        <View>
+          <Button
+            onPress={() => {
+                db.transaction(tx => {
+                  tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['hello', '1/11', '5/30', '5/25'],
+                    (txObj, resultSet) => this.setState({ data: this.state.data.concat(
+                        { Id: resultSet.insertId, Name: 'hello', LastWatered: '1/11', LastFertilized: '5/30', LastPotted: '5/25' }) }),
+                    (txObj, error) => console.log('Error', error))
+                })
+            }}
+            title={'INSERT'}
+          />
+        </View>
+        <View>
+          <Button
+            onPress={() => {
+              db.transaction(tx => {
+                   // sending 4 arguments in executeSql
+                   tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
+                     // success callback which sends two things Transaction object and ResultSet Object
+                     (txObj, { rows: { _array } }) => this.setState({ data: _array }),
+                     // failure callback which sends two things Transaction object and Error
+                     (txObj, error) => console.log('Error ', error)
+                     ) // end executeSQL
+                 })
+            }}
+            title={'SELECT'}
+          />
+        </View>
+        <Text style={styles.plant}>{'Name'.padEnd(12)}{'Water'.padEnd(12)}{'Fertilize'.padEnd(12)}{'Pot'.padEnd(12)}</Text>
+        <View style={styles.container}>
+        <Table borderStyle={{borderWidth: 1, borderColor: '#ffa1d2'}}>
+          <Row data={this.state.HeadTable} style={styles.plant} textStyle={styles.plant}/>
+          <Rows data={this.state.DataTable} textStyle={styles.plant}/>
+        </Table>
+      </View>
         <ScrollView>
         {
             this.state.data && this.state.data.map(data =>
             (
-                <View key={data.Id} style={styles.plant}>
-                <Text >{data.Name} - {data.LastWatered}</Text>
+              this.state.DataTable[1,0] = data.Id;
+              this.state.DataTable[1,0] = data.Name;
+              this.state.DataTable[1,0] = data.Water;
+              this.state.DataTable[1,0] = data.Fertilize;
+              this.state.DataTable[1,0] = data.Pot;
+                <View key={data.Id} style={styles.container}>
+                <Text style={styles.plant}>{data.Name.trim().padEnd(12)}{data.LastWatered.trim().padEnd(12)}{data.LastFertilized.trim().padEnd(12)}{data.LastPotted.trim().padEnd(12)}</Text>
                 </View>
             )
         )}
@@ -71,6 +108,27 @@ class App extends Component {
   }
 }
 export default App;
+
+GetAllPlants = () => {
+db.transaction(tx => {
+     // sending 4 arguments in executeSql
+     tx.executeSql('SELECT * FROM Plant', null, // passing sql query and parameters:null
+       // success callback which sends two things Transaction object and ResultSet Object
+       (txObj, { rows: { _array } }) => this.setState({ data: _array }),
+       // failure callback which sends two things Transaction object and Error
+       (txObj, error) => console.log('Error ', error)
+       ) // end executeSQL
+   })
+ }
+
+ // CreatePlant = () => {
+ //   db.transaction(tx => {
+ //     tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['hello', '6/14', '5/30', '4/15'],
+ //       (txObj, resultSet) => this.setState({ data: this.state.data.concat(
+ //           { Id: resultSet.insertId, Name: 'hello', LastWatered: '6/14', LastFertilized: '5/30', LastPotted: '4/15' }) }),
+ //       (txObj, error) => console.log('Error', error))
+ //   })
+ //  }
 
 const styles = StyleSheet.create({
   container: {
