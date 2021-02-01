@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   },
 })
 
-export default class GetAll extends React.Components {
+export default class GetAll extends Component {
   constructor(props) {
     super(props)
     this.state = {

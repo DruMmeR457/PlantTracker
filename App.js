@@ -10,7 +10,6 @@ import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-ta
 import * as SQLite from 'expo-sqlite';
 const db = SQLite.openDatabase('PlantDatabase.db');
 
-
 // export default function App() {
 //   return (
 //     <View>
@@ -32,12 +31,6 @@ class App extends Component {
      ]
     }
 
-    db.transaction(tx => {
-         // sending 4 arguments in executeSql
-         tx.executeSql('CREATE TABLE IF NOT EXISTS Plant(Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, LastWatered DATETIME, LastFertilized DATETIME, LastPotted DATETIME);')
-       }
-     );
-
    // db.transaction(tx => {
    //   tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['gibberish', '6/14', '5/30', '4/15'],
    //     (txObj, resultSet) => this.setState({ data: this.state.data.concat(
@@ -55,10 +48,22 @@ class App extends Component {
         <View>
           <Button
             onPress={() => {
+              db.transaction(tx => {
+                   // sending 4 arguments in executeSql
+                   tx.executeSql('CREATE TABLE IF NOT EXISTS Plant(Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, LastWatered DATETIME, LastFertilized DATETIME, LastPotted DATETIME);')
+                 }
+               );
+            }}
+            title={'CREATE'}
+          />
+        </View>
+        <View>
+          <Button
+            onPress={() => {
                 db.transaction(tx => {
                   tx.executeSql('INSERT INTO Plant (Name, LastWatered, LastFertilized, LastPotted) VALUES (?, ?, ?, ?)', ['hello', '1/11', '5/30', '5/25'],
                     (txObj, resultSet) => this.setState({ data: this.state.data.concat(
-                        { Id: resultSet.insertId, Name: 'hello', LastWatered: '1/11', LastFertilized: '5/30', LastPotted: '5/25' }) }),
+                        { Name: 'hello', LastWatered: '1/11', LastFertilized: '5/30', LastPotted: '5/25' }) }),
                     (txObj, error) => console.log('Error', error))
                 })
             }}
@@ -81,24 +86,24 @@ class App extends Component {
             title={'SELECT'}
           />
         </View>
+        <View>
+        <Button
+          onPress={() => {
+              db.transaction(tx => {
+                tx.executeSql('DROP TABLE Plant;')
+                this.setState({ data: null});
+              });
+          }}
+          title={'DROP'}
+        />
+        </View>
         <Text style={styles.plant}>{'Name'.padEnd(12)}{'Water'.padEnd(12)}{'Fertilize'.padEnd(12)}{'Pot'.padEnd(12)}</Text>
-        <View style={styles.container}>
-        <Table borderStyle={{borderWidth: 1, borderColor: '#ffa1d2'}}>
-          <Row data={this.state.HeadTable} style={styles.plant} textStyle={styles.plant}/>
-          <Rows data={this.state.DataTable} textStyle={styles.plant}/>
-        </Table>
-      </View>
         <ScrollView>
         {
             this.state.data && this.state.data.map(data =>
             (
-              this.state.DataTable[1,0] = data.Id;
-              this.state.DataTable[1,0] = data.Name;
-              this.state.DataTable[1,0] = data.Water;
-              this.state.DataTable[1,0] = data.Fertilize;
-              this.state.DataTable[1,0] = data.Pot;
                 <View key={data.Id} style={styles.container}>
-                <Text style={styles.plant}>{data.Name.trim().padEnd(12)}{data.LastWatered.trim().padEnd(12)}{data.LastFertilized.trim().padEnd(12)}{data.LastPotted.trim().padEnd(12)}</Text>
+                <Text style={styles.plant}>{data.Id}  {data.Name.trim().padEnd(12)}{data.LastWatered.trim().padEnd(12)}{data.LastFertilized.trim().padEnd(12)}{data.LastPotted.trim().padEnd(12)}</Text>
                 </View>
             )
         )}
